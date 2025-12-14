@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NAINA V.AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="brand">Naina V.AI</div>
+  </header>
+
+  <main class="layout">
+
+    <section class="image-panel">
+      <h3>Uploaded Image</h3>
+      <div id="imageBox"></div>
+    </section>
+
+    <section class="control-panel">
+
+      <div class="preview-box"></div>
+
+      <div class="prompt-row">
+        <input type="text" id="promptInput" placeholder="Input prompt" />
+        <button id="askBtn">ASK</button>
+      </div>
+
+      <div class="answer-box" id="answerBox">
+        Answer
+      </div>
+
+    </section>
+
+    <aside class="side-panel">
+      <div class="side-item" id="wifiStatus">WiFi</div>
+      <div class="side-item" id="captureBtn">Capture</div>
+      <div class="side-item" id="regenBtn">Regenerate</div>
+    </aside>
+
+  </main>
+
+  <section class="serial-monitor">
+    <h3>Serial Monitor</h3>
+    <div id="log"></div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
 
