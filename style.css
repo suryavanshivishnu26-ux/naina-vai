@@ -1,1 +1,110 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #111;
+  color: #eee;
+}
+
+header {
+  text-align: center;
+  padding: 20px;
+}
+
+.brand {
+  font-size: 28px;
+  padding: 10px 30px;
+  border-radius: 30px;
+  background: #000;
+  display: inline-block;
+}
+
+.layout {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+}
+
+.image-panel, .control-panel {
+  background: #000;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.image-panel {
+  width: 40%;
+}
+
+#imageBox {
+  height: 300px;
+  background: #222;
+  border-radius: 15px;
+}
+
+.control-panel {
+  width: 40%;
+}
+
+.preview-box {
+  height: 120px;
+  background: #ddd;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.prompt-row {
+  display: flex;
+  gap: 10px;
+}
+
+.prompt-row input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+}
+
+#askBtn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: #00c2d1;
+  border: none;
+  font-weight: bold;
+}
+
+.answer-box {
+  margin-top: 15px;
+  background: #333;
+  border-radius: 15px;
+  padding: 20px;
+  min-height: 100px;
+}
+
+.side-panel {
+  width: 15%;
+  background: #000;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.side-item {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 15px;
+  background: #111;
+  border-radius: 15px;
+}
+
+.serial-monitor {
+  margin: 20px;
+  background: #000;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+#log {
+  font-family: monospace;
+  font-size: 13px;
+  max-height: 150px;
+  overflow-y: auto;
+}
 
