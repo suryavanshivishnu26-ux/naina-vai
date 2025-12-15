@@ -1,40 +1,35 @@
 // ===============================
-// NAINA V.AI – Frontend Logic
+// NAINA V.AI – Website ↔ Backend
 // ===============================
+
+// ---- BACKEND URL ----
+const CORE_URL = "https://naina-vai-core.suryavanshivishnu-26.workers.dev";
 
 // ---- UI ELEMENTS ----
 const logBox = document.getElementById("log");
+const wifiStatus = document.getElementById("wifiStatus");
 const answerBox = document.getElementById("answerBox");
 const imageBox = document.getElementById("imageBox");
-const wifiStatus = document.getElementById("wifiStatus");
 const promptInput = document.getElementById("promptInput");
 
-// ---- SYSTEM STATE ----
+// ---- DEVICE STATE ----
 const devices = {
   cam: false,
   display: false
 };
 
-let imageReceived = false;
+let imageReady = false;
 
-// ---- SERIAL MONITOR LOG ----
-function log(message) {
+// ---- SERIAL MONITOR ----
+function log(msg) {
   const line = document.createElement("div");
-  line.textContent = "> " + message;
+  line.textContent = "> " + msg;
   logBox.appendChild(line);
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// ---- DEVICE REGISTRATION ----
-function registerDevice(type) {
-  if (!devices[type]) {
-    devices[type] = true;
-    log(type.toUpperCase() + " connected to website");
-    updateWiFiStatus();
-  }
-}
-
-function updateWiFiStatus() {
+// ---- WIFI STATUS ----
+function updateWiFi() {
   if (devices.cam && devices.display) {
     wifiStatus.textContent = "WiFi ✓";
     wifiStatus.style.background = "#0a3";
@@ -44,45 +39,59 @@ function updateWiFiStatus() {
   }
 }
 
-// ---- IMAGE RECEIVE (FROM ESP32-CAM) ----
+// ---- REGISTER DEVICE WITH BACKEND ----
+async function registerDevice(type) {
+  log(`Registering ${type.toUpperCase()}…`);
+
+  try {
+    const res = await fetch(`${CORE_URL}/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ device: type })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "ok") {
+      devices[type] = true;
+      log(data.message);
+      updateWiFi();
+    } else {
+      log(`Registration failed for ${type}`);
+    }
+
+  } catch (err) {
+    log(`Backend error while registering ${type}`);
+  }
+}
+
+// ---- IMAGE RECEIVE (SIMULATED FOR NOW) ----
 function receiveImage() {
-  imageReceived = true;
+  imageReady = true;
   imageBox.textContent = "Image received";
   log("Image received from ESP32-CAM");
 }
 
-// ---- ANALYSIS FLOW ----
+// ---- ANALYSIS FLOW (SIMULATED) ----
 function analyzeImage() {
-  if (!imageReceived) {
-    log("No image available for analysis");
+  if (!imageReady) {
+    log("No image available");
     answerBox.textContent = "No image received yet";
     return;
   }
 
   const prompt = promptInput.value.trim();
-
   log("ASK pressed");
-  log("Preparing request for Groq LLaMA Scout");
+  log(prompt ? `Prompt: "${prompt}"` : "No prompt provided");
+  log("Sending image + prompt to Groq LLaMA Scout");
 
-  if (prompt) {
-    log("Prompt added: \"" + prompt + "\"");
-  } else {
-    log("No prompt provided, using default analysis");
-  }
+  answerBox.textContent = "Analyzing image…";
 
-  answerBox.textContent = "Analyzing image...";
-
-  // ---- SIMULATED API CALL ----
   setTimeout(() => {
-    const output =
-      "Analysis complete. (Demo response from LLaMA Scout)";
-
-    answerBox.textContent = output;
-
+    answerBox.textContent =
+      "Analysis complete (demo output)";
     log("Groq API response received");
-    log("Sending output to ESP32 display");
-    log("ESP32 OLED updated successfully");
-
+    log("Sending output to ESP32 OLED");
   }, 1500);
 }
 
@@ -92,12 +101,10 @@ document.getElementById("captureBtn").onclick = () => {
   receiveImage();
 };
 
-document.getElementById("askBtn").onclick = () => {
-  analyzeImage();
-};
+document.getElementById("askBtn").onclick = analyzeImage;
 
 document.getElementById("regenBtn").onclick = () => {
-  if (!imageReceived) {
+  if (!imageReady) {
     log("Regenerate failed: no image");
     return;
   }
@@ -107,8 +114,8 @@ document.getElementById("regenBtn").onclick = () => {
 
 // ---- SYSTEM BOOT ----
 log("Website loaded");
-log("Waiting for devices...");
+log("Contacting backend…");
 
-// Simulated power-on registration
+// Register devices (website-side simulation)
 registerDevice("cam");
 registerDevice("display");
