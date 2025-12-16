@@ -66,11 +66,26 @@ async function registerDevice(type) {
 }
 
 // ---- IMAGE RECEIVE (SIMULATED FOR NOW) ----
-function receiveImage() {
-  imageReady = true;
-  imageBox.textContent = "Image received";
-  log("Image received from ESP32-CAM");
+async function receiveImage() {
+  try {
+    const res = await fetch(
+      "https://naina-vai-core.suryavanshivishnu-26.workers.dev/latest-image"
+    );
+    const data = await res.json();
+
+    imageBox.innerHTML = `
+      <img
+        src="data:image/jpeg;base64,${data.image}"
+        style="width:100%; border-radius:12px;"
+      />
+    `;
+    log("Image loaded from backend");
+
+  } catch (e) {
+    log("No image available yet");
+  }
 }
+
 
 // ---- ANALYSIS FLOW (SIMULATED) ----
 function analyzeImage() {
