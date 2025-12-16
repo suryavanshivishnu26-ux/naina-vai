@@ -49,10 +49,16 @@ async function triggerCapture() {
 async function fetchImage() {
   try {
     const res = await fetch(`${BACKEND}/latest-image`);
+
+    if (!res.ok) {
+      log("Image not ready yet");
+      return;
+    }
+
     const data = await res.json();
 
-    if (!data.image) {
-      log("No image received");
+    if (!data.image || data.image.length < 100) {
+      log("Invalid image data");
       return;
     }
 
@@ -66,9 +72,10 @@ async function fetchImage() {
     log("Image received and displayed");
 
   } catch (e) {
-    log("Image not available yet");
+    log("Image fetch failed");
   }
 }
+
 
 // ---- BUTTON BINDING ----
 captureBtn.addEventListener("click", triggerCapture);
