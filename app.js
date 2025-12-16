@@ -35,30 +35,39 @@ async function checkBackend() {
 async function triggerCapture() {
   try {
     log("Requesting capture from ESP32-CAM…");
-
     await fetch(`${BACKEND}/trigger-capture`);
 
-    // give ESP32 time to capture + upload
-    setTimeout(fetchImage, 2500);
+    // start polling immediately
+    setTimeout(() => fetchImage(), 500);
+
   } catch (e) {
     log("Failed to trigger capture");
   }
 }
 
+
 // ---- FETCH IMAGE ----
-async function fetchImage() {
+async function fetchImage(retries = 8) {
   try {
     const res = await fetch(`${BACKEND}/latest-image`);
 
     if (!res.ok) {
-      log("Image not ready yet");
+      if (retries > 0) {
+        log("Waiting for image…");
+        setTimeout(() => fetchImage(retries - 1), 700);
+      } else {
+        log("Image capture timed out");
+      }
       return;
     }
 
     const data = await res.json();
 
-    if (!data.image || data.image.length < 100) {
-      log("Invalid image data");
+    if (!data.image || data.image.length < 200) {
+      if (retries > 0) {
+        log("Waiting for valid image…");
+        setTimeout(() => fetchImage(retries - 1), 700);
+      }
       return;
     }
 
@@ -72,9 +81,10 @@ async function fetchImage() {
     log("Image received and displayed");
 
   } catch (e) {
-    log("Image fetch failed");
+    log("Error fetching image");
   }
 }
+
 
 
 // ---- BUTTON BINDING ----
