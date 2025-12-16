@@ -39,7 +39,7 @@ async function triggerCapture() {
     await fetch(`${BACKEND}/trigger-capture`);
 
     // give ESP32 time to capture + upload
-    setTimeout(fetchImage, 1500);
+    setTimeout(fetchImage, 2500);
   } catch (e) {
     log("Failed to trigger capture");
   }
