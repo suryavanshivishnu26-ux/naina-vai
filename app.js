@@ -1,77 +1,60 @@
 // ===============================
-// NAINA V.AI – Website ↔ Backend
+// NAINA V.AI — app.js
+// Website-triggered capture
 // ===============================
 
-// ---- BACKEND URL ----
-const CORE_URL = "https://naina-vai-core.suryavanshivishnu-26.workers.dev";
+// ---- BACKEND URL (DO NOT CHANGE SPELLING) ----
+const BACKEND =
+  "https://naina-vai-core.suryavanshivishnu-26.workers.dev";
 
 // ---- UI ELEMENTS ----
 const logBox = document.getElementById("log");
-const wifiStatus = document.getElementById("wifiStatus");
-const answerBox = document.getElementById("answerBox");
 const imageBox = document.getElementById("imageBox");
-const promptInput = document.getElementById("promptInput");
+const captureBtn = document.getElementById("captureBtn");
 
-// ---- DEVICE STATE ----
-const devices = {
-  cam: false,
-  display: false
-};
-
-let imageReady = false;
-
-// ---- SERIAL MONITOR ----
+// ---- LOG FUNCTION ----
 function log(msg) {
-  const line = document.createElement("div");
-  line.textContent = "> " + msg;
-  logBox.appendChild(line);
+  const time = new Date().toLocaleTimeString();
+  logBox.innerHTML += `[${time}] ${msg}<br>`;
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// ---- WIFI STATUS ----
-function updateWiFi() {
-  if (devices.cam && devices.display) {
-    wifiStatus.textContent = "WiFi ✓";
-    wifiStatus.style.background = "#0a3";
-  } else {
-    wifiStatus.textContent = "WiFi ×";
-    wifiStatus.style.background = "#400";
+// ---- CHECK BACKEND ON LOAD ----
+async function checkBackend() {
+  try {
+    const res = await fetch(BACKEND);
+    const data = await res.json();
+    log("Website loaded");
+    log("Backend online");
+  } catch (e) {
+    log("Backend not reachable");
   }
 }
 
-// ---- REGISTER DEVICE WITH BACKEND ----
-async function registerDevice(type) {
-  log(`Registering ${type.toUpperCase()}…`);
-
+// ---- TRIGGER CAPTURE ----
+async function triggerCapture() {
   try {
-    const res = await fetch(`${CORE_URL}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ device: type })
-    });
+    log("Requesting capture from ESP32-CAM…");
 
+    await fetch(`${BACKEND}/trigger-capture`);
+
+    // give ESP32 time to capture + upload
+    setTimeout(fetchImage, 1500);
+  } catch (e) {
+    log("Failed to trigger capture");
+  }
+}
+
+// ---- FETCH IMAGE ----
+async function fetchImage() {
+  try {
+    const res = await fetch(`${BACKEND}/latest-image`);
     const data = await res.json();
 
-    if (data.status === "ok") {
-      devices[type] = true;
-      log(data.message);
-      updateWiFi();
-    } else {
-      log(`Registration failed for ${type}`);
+    if (!data.image) {
+      log("No image received");
+      return;
     }
-
-  } catch (err) {
-    log(`Backend error while registering ${type}`);
-  }
-}
-
-// ---- IMAGE RECEIVE (SIMULATED FOR NOW) ----
-async function receiveImage() {
-  try {
-    const res = await fetch(
-      "https://naina-vai-core.suryavanshivishnu-26.workers.dev/latest-image"
-    );
-    const data = await res.json();
 
     imageBox.innerHTML = `
       <img
@@ -79,58 +62,16 @@ async function receiveImage() {
         style="width:100%; border-radius:12px;"
       />
     `;
-    log("Image loaded from backend");
+
+    log("Image received and displayed");
 
   } catch (e) {
-    log("No image available yet");
+    log("Image not available yet");
   }
 }
 
+// ---- BUTTON BINDING ----
+captureBtn.addEventListener("click", triggerCapture);
 
-// ---- ANALYSIS FLOW (SIMULATED) ----
-function analyzeImage() {
-  if (!imageReady) {
-    log("No image available");
-    answerBox.textContent = "No image received yet";
-    return;
-  }
-
-  const prompt = promptInput.value.trim();
-  log("ASK pressed");
-  log(prompt ? `Prompt: "${prompt}"` : "No prompt provided");
-  log("Sending image + prompt to Groq LLaMA Scout");
-
-  answerBox.textContent = "Analyzing image…";
-
-  setTimeout(() => {
-    answerBox.textContent =
-      "Analysis complete (demo output)";
-    log("Groq API response received");
-    log("Sending output to ESP32 OLED");
-  }, 1500);
-}
-
-// ---- BUTTON EVENTS ----
-document.getElementById("captureBtn").onclick = () => {
-  log("Capture command sent to ESP32-CAM");
-  receiveImage();
-};
-
-document.getElementById("askBtn").onclick = analyzeImage;
-
-document.getElementById("regenBtn").onclick = () => {
-  if (!imageReady) {
-    log("Regenerate failed: no image");
-    return;
-  }
-  log("Regenerate requested");
-  analyzeImage();
-};
-
-// ---- SYSTEM BOOT ----
-log("Website loaded");
-log("Contacting backend…");
-
-// Register devices (website-side simulation)
-registerDevice("cam");
-registerDevice("display");
+// ---- INIT ----
+checkBackend();
